@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Numera - Sube tu constancia de situación fiscal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    /* Add some basic styling */
+    body {
+        font-family: Inter, sans-serif;
+        margin: 20px; /* Added margin for better mobile viewing */
+        padding: 0;
+        text-align: center;
+    }
+    #file-drop-area {
+        border: 2px dashed #ccc;
+        padding: 20px;
+        cursor: pointer;
+        margin-bottom: 20px; /* Added margin between elements */
+    }
+    #file-drop-area.highlight {
+        border-color: #007bff;
+    }
+    #submit-btn {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    #submit-btn:hover {
+        background-color: #0056b3;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Bienvenidos</h1>
+    <p>Aquí puedes compartir tu constancia de situación fiscal para obtener tu factura timbrada.</p>
+    <div id="file-drop-area" onclick="document.getElementById('file-input').click();">
+        <p id="file-text">Arrastra y suelta tu archivo PDF aquí o haz clic para seleccionar</p>
+        <input type="file" id="file-input" accept=".pdf" style="display: none;">
+    </div>
+    <button id="submit-btn">Enviar</button>
+</div>
+
+<script>
+    // Function to retrieve query parameter
+    function getQueryParam(name) {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        return urlParams.get(name);
+    }
+
+    // Function to handle file drop
+    function handleFileDrop(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Highlight drop area
+        document.getElementById('file-drop-area').classList.remove('highlight');
+
+        // Retrieve the file from the event
+        const file = event.dataTransfer.files[0];
+
+        // Validate file type
+        if (file.type !== 'application/pdf') {
+            alert('Por favor, sube solo archivos PDF.');
+            return;
+        }
+
+        // Update file info
+        updateFileInfo(file.name);
+    }
+
+    // Function to handle file input change
+    function handleFileInputChange(event) {
+        const file = event.target.files[0];
+
+        // Validate file type
+        if (file.type !== 'application/pdf') {
+            alert('Por favor, sube solo archivos PDF.');
+            return;
+        }
+
+        // Update file info
+        updateFileInfo(file.name);
+    }
+
+    // Function to update file info in the drop area
+    function updateFileInfo(fileName) {
+        const fileInfoDiv = document.getElementById('file-text');
+        fileInfoDiv.innerHTML = '' + fileName;
+    }
+
+    // Function to handle file drop area highlighting
+    function highlightDropArea(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        document.getElementById('file-drop-area').classList.add('highlight');
+    }
+
+    // Function to handle file drop area unhighlighting
+    function unhighlightDropArea(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        document.getElementById('file-drop-area').classList.remove('highlight');
+    }
+
+    // Function to handle submitting the file
+    function submitFile() {
+        const fileInput = document.getElementById('file-input');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('Por favor, selecciona un archivo.');
+            return;
+        }
+
+        // Retrieve token from query parameter
+        const token = getQueryParam('token');
+
+        // Simulate sending the file to a server
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch('https://example.com/upload', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.body.innerHTML = 'Archivo enviado con éxito.';
+            console.log(JSON.stringify(data));
+        })
+        .catch(error => {
+            console.error('Error al enviar el archivo:', error);
+            document.body.innerHTML = 'Error al enviar archivo, por favor intenta más tarde.';
+        });
+    }
+
+    // Event listeners
+    const fileDropArea = document.getElementById('file-drop-area');
+    fileDropArea.addEventListener('dragenter', highlightDropArea);
+    fileDropArea.addEventListener('dragover', highlightDropArea);
+    fileDropArea.addEventListener('dragleave', unhighlightDropArea);
+    fileDropArea.addEventListener('drop', handleFileDrop);
+
+    const fileInput = document.getElementById('file-input');
+    fileInput.addEventListener('change', handleFileInputChange);
+
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.addEventListener('click', submitFile);
+</script>
+</body>
+</html>
